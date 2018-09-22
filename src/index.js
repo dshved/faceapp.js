@@ -49,14 +49,7 @@ const getAvailableFilters = async file => {
  * @returns {Promise.<Buffer>}
  */
 const getFilterImage = async (args, filterID = 'no-filter') => {
-  let filterArr = args.filters.filter(o => o.id === filterID)
-  if (filterArr.length === 0) {
-    let filters = args.filters.map(o => o.id).join(', ')
-    throw new Error(`Invalid Filter ID\nAvailable Filters: '${filters}'`)
-  }
-
-  let filter = filterArr[0]
-  let url = `${constants.API_BASE_URL}/api/v3.0/photos/${args.code}/filters/${filter.id}`
+  let url = `${constants.API_BASE_URL}/api/v3.0/photos/${args.code}/filters/${filterID}`
 
   try {
     let res = await superagent.get(url)
