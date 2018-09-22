@@ -23,20 +23,18 @@ const superagent = require('superagent')
  * @returns {Promise.<AvailableFilters>}
  */
 const getAvailableFilters = async file => {
-  let deviceID = constants.generateDeviceID()
+  let deviceID = constants.API_DEVICE_ID
   try {
-    let res = await superagent.post(`${constants.API_BASE_URL}/api/v2.6/photos`)
+    let res = await superagent.post(`${constants.API_BASE_URL}/api/v3.0/photos`)
       .set('User-Agent', constants.API_USER_AGENT)
       .set('X-FaceApp-DeviceID', deviceID)
       .attach('file', file, 'image.png')
 
     let code = res.body.code
-    let filters = res.body.filters
+    let filters = res.body.add_to
       .map(o => ({
-        id: o.id,
-        title: o.title,
-        cropped: o.is_paid ? true : o.only_cropped,
-        paid: o.is_paid,
+        id: o.filter_id,
+        title: o.filter_id,
       }))
 
     return { code, deviceID, filters }
@@ -46,7 +44,6 @@ const getAvailableFilters = async file => {
 }
 
 /**
- * 
  * @param {AvailableFilters} args Input Object
  * @param {string} filterID Filter ID
  * @returns {Promise.<Buffer>}
@@ -59,8 +56,7 @@ const getFilterImage = async (args, filterID = 'no-filter') => {
   }
 
   let filter = filterArr[0]
-  let cropped = filter.cropped ? '1' : '0'
-  let url = `${constants.API_BASE_URL}/api/v2.6/photos/${args.code}/filters/${filter.id}?cropped=${cropped}`
+  let url = `${constants.API_BASE_URL}/api/v3.0/photos/${args.code}/filters/${filter.id}`
 
   try {
     let res = await superagent.get(url)
@@ -74,30 +70,6 @@ const getFilterImage = async (args, filterID = 'no-filter') => {
 }
 
 /**
- * Runs an image through the [FaceApp](https://www.faceapp.com/) Algorithm
- * 
- * Known Filter IDs:
- * * no-filter
- * * smile
- * * smile_2
- * * hot
- * * old
- * * young
- * * female_2
- * * female
- * * male
- * * pan
- * * hitman
- * * hollywood
- * * heisenberg
- * * impression
- * * lion
- * * goatee
- * * hipster
- * * bangs
- * * glasses
- * * wave
- * * makeup
  * @param {string|Buffer} path Path to Image OR Image Buffer
  * @param {string} [filterID] Filter ID
  * @returns {Promise.<Buffer>}
